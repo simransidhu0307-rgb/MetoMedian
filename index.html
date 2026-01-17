@@ -194,6 +194,12 @@
             justify-content: center;
             color: white;
             font-weight: bold;
+            cursor: pointer;
+            object-fit: cover;
+        }
+
+        .avatar:hover {
+            opacity: 0.8;
         }
 
         .story-title {
@@ -408,6 +414,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
             text-align: center;
+            position: relative;
         }
 
         .profile-avatar {
@@ -422,6 +429,49 @@
             font-size: 2rem;
             font-weight: bold;
             margin: 0 auto 1rem;
+            cursor: pointer;
+            object-fit: cover;
+            position: relative;
+            transition: opacity 0.3s;
+        }
+
+        .profile-avatar:hover {
+            opacity: 0.7;
+        }
+
+        .profile-avatar::after {
+            content: '📷';
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 1.2rem;
+            background: #1a1a2e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .profile-avatar:hover::after {
+            opacity: 1;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .bot-badge {
+            display: inline-block;
+            background: #4fbdba;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
         }
 
         .follow-btn {
@@ -597,6 +647,7 @@
                 this.stories = this.loadData('stories') || [];
                 this.messages = this.loadData('messages') || [];
                 this.follows = this.loadData('follows') || [];
+                this.bots = ['BotWriter', 'PoetBot', 'StoryMaster', 'CreativeAI'];
             }
 
             loadData(key) {
@@ -613,9 +664,25 @@
                 if (this.users.find(u => u.username === username)) {
                     return { success: false, error: 'Username already exists' };
                 }
-                const user = { username, password, joinDate: new Date().toISOString() };
+                const user = { 
+                    username, 
+                    password, 
+                    joinDate: new Date().toISOString(),
+                    isBot: this.bots.includes(username),
+                    profilePic: null
+                };
                 this.users.push(user);
                 this.saveData('users', this.users);
+                
+                // Make bots follow new users automatically
+                if (!user.isBot) {
+                    this.bots.forEach(bot => {
+                        if (this.users.find(u => u.username === bot)) {
+                            this.followUserFrom(bot, username);
+                        }
+                    });
+                }
+                
                 return { success: true };
             }
 
@@ -626,6 +693,17 @@
                     return { success: true };
                 }
                 return { success: false, error: 'Invalid credentials' };
+            }
+
+            updateProfilePic(profilePic) {
+                if (this.currentUser) {
+                    this.currentUser.profilePic = profilePic;
+                    const userIndex = this.users.findIndex(u => u.username === this.currentUser.username);
+                    if (userIndex !== -1) {
+                        this.users[userIndex].profilePic = profilePic;
+                        this.saveData('users', this.users);
+                    }
+                }
             }
 
             // Story Management
@@ -700,6 +778,20 @@
                 }
             }
 
+            followUserFrom(follower, following) {
+                if (follower === following) return;
+                const exists = this.follows.find(f => 
+                    f.follower === follower && f.following === following
+                );
+                if (!exists) {
+                    this.follows.push({
+                        follower,
+                        following
+                    });
+                    this.saveData('follows', this.follows);
+                }
+            }
+
             unfollowUser(username) {
                 this.follows = this.follows.filter(f => 
                     !(f.follower === this.currentUser.username && f.following === username)
@@ -732,497 +824,4 @@
                     read: false
                 };
                 this.messages.push(message);
-                this.saveData('messages', this.messages);
-                return message;
-            }
-
-            getConversations() {
-                const conversations = new Set();
-                this.messages
-                    .filter(m => m.from === this.currentUser.username || m.to === this.currentUser.username)
-                    .forEach(m => {
-                        const otherUser = m.from === this.currentUser.username ? m.to : m.from;
-                        conversations.add(otherUser);
-                    });
-                return Array.from(conversations);
-            }
-
-            getMessages(withUser) {
-                return this.messages
-                    .filter(m => 
-                        (m.from === this.currentUser.username && m.to === withUser) ||
-                        (m.from === withUser && m.to === this.currentUser.username)
-                    )
-                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            }
-        }
-
-        // Initialize
-        const app = new MetoMedia();
-        let currentPage = 'feed';
-        let currentChatUser = null;
-
-        // Check for logged in user
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-            const user = app.users.find(u => u.username === savedUser);
-            if (user) {
-                app.currentUser = user;
-                showLoggedInState();
-            }
-        }
-
-        // UI Functions
-        function showAuthModal(mode) {
-            document.getElementById('authModal').classList.add('active');
-            const title = document.getElementById('authTitle');
-            const btn = document.getElementById('authBtn');
-            const toggle = document.getElementById('authToggle');
-            
-            if (mode === 'login') {
-                title.textContent = 'Login';
-                btn.textContent = 'Login';
-                toggle.textContent = "Don't have an account? Sign Up";
-            } else {
-                title.textContent = 'Sign Up';
-                btn.textContent = 'Sign Up';
-                toggle.textContent = 'Already have an account? Login';
-            }
-            
-            document.getElementById('authForm').dataset.mode = mode;
-        }
-
-        function closeAuthModal() {
-            document.getElementById('authModal').classList.remove('active');
-            document.getElementById('authForm').reset();
-        }
-
-        function toggleAuthMode() {
-            const mode = document.getElementById('authForm').dataset.mode;
-            showAuthModal(mode === 'login' ? 'signup' : 'login');
-        }
-
-        function handleAuth(event) {
-            event.preventDefault();
-            const mode = event.target.dataset.mode;
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (mode === 'signup') {
-                const result = app.signup(username, password);
-                if (result.success) {
-                    alert('Account created successfully! Please login.');
-                    showAuthModal('login');
-                } else {
-                    alert(result.error);
-                }
-            } else {
-                const result = app.login(username, password);
-                if (result.success) {
-                    localStorage.setItem('currentUser', username);
-                    closeAuthModal();
-                    showLoggedInState();
-                    showPage('feed');
-                } else {
-                    alert(result.error);
-                }
-            }
-        }
-
-        function showLoggedInState() {
-            document.getElementById('navLinks').style.display = 'flex';
-            document.getElementById('authNav').style.display = 'none';
-            loadFeed();
-        }
-
-        function logout() {
-            app.currentUser = null;
-            localStorage.removeItem('currentUser');
-            document.getElementById('navLinks').style.display = 'none';
-            document.getElementById('authNav').style.display = 'flex';
-            showPage('feed');
-            document.getElementById('storyFeed').innerHTML = '<p style="text-align: center; color: #666;">Please login to see stories.</p>';
-        }
-
-        function showPage(page, param = null) {
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            
-            // Update nav active state
-            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-            
-            // Show selected page
-            switch(page) {
-                case 'feed':
-                    document.getElementById('feedPage').style.display = 'block';
-                    document.getElementById('nav-feed').classList.add('active');
-                    if (app.currentUser) loadFeed();
-                    break;
-                case 'create':
-                    document.getElementById('createPage').style.display = 'block';
-                    document.getElementById('nav-create').classList.add('active');
-                    break;
-                case 'story':
-                    document.getElementById('storyPage').style.display = 'block';
-                    loadStory(param);
-                    break;
-                case 'profile':
-                    document.getElementById('profilePage').style.display = 'block';
-                    loadProfile(param);
-                    break;
-                case 'messages':
-                    document.getElementById('messagesPage').style.display = 'block';
-                    document.getElementById('nav-messages').classList.add('active');
-                    loadConversations();
-                    break;
-                case 'followers':
-                case 'following':
-                    document.getElementById('followPage').style.display = 'block';
-                    loadFollowList(page, param);
-                    break;
-            }
-        }
-
-        function loadFeed() {
-            if (!app.currentUser) return;
-            const stories = app.getStories();
-            const feed = document.getElementById('storyFeed');
-            
-            if (stories.length === 0) {
-                feed.innerHTML = '<p style="text-align: center; color: #666;">No stories yet. Follow users or write your own!</p>';
-                return;
-            }
-
-            feed.innerHTML = stories.map(story => createStoryCard(story)).join('');
-        }
-
-        function createStoryCard(story) {
-            const isLiked = story.likes.includes(app.currentUser.username);
-            const author = app.users.find(u => u.username === story.author);
-            
-            return `
-                <div class="story-card">
-                    <div class="story-header">
-                        <div class="author-info">
-                            <div class="avatar">${story.author[0].toUpperCase()}</div>
-                            <div>
-                                <div style="font-weight: 600; cursor: pointer;" onclick="showPage('profile', '${story.author}')">${story.author}</div>
-                                <div style="font-size: 0.85rem; color: #666;">${new Date(story.timestamp).toLocaleDateString()}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="story-title" onclick="showPage('story', ${story.id})">${story.title}</h3>
-                    <div class="story-content" id="content-${story.id}">
-                        ${story.content}
-                    </div>
-                    <div class="story-actions">
-                        <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${story.id})">
-                            <span>${isLiked ? '❤️' : '🤍'}</span>
-                            <span>${story.likes.length}</span>
-                        </button>
-                        <button class="action-btn" onclick="toggleComments(${story.id})">
-                            <span>💬</span>
-                            <span>${story.comments.length}</span>
-                        </button>
-                        <button class="action-btn" onclick="showPage('story', ${story.id})">
-                            <span>📖</span>
-                            <span>Read More</span>
-                        </button>
-                    </div>
-                    <div class="comments-section" id="comments-${story.id}"></div>
-                </div>
-            `;
-        }
-
-        function publishStory() {
-            const title = document.getElementById('storyTitle').value;
-            const content = document.getElementById('storyContent').value;
-            
-            if (!title || !content) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            app.createStory(title, content);
-            document.getElementById('storyTitle').value = '';
-            document.getElementById('storyContent').value = '';
-            showPage('feed');
-            alert('Story published successfully!');
-        }
-
-        function loadStory(storyId) {
-            const story = app.getStory(storyId);
-            if (!story) {
-                showPage('feed');
-                return;
-            }
-
-            const isLiked = story.likes.includes(app.currentUser.username);
-            const isAuthor = story.author === app.currentUser.username;
-            
-            document.getElementById('storyDetail').innerHTML = `
-                <div class="story-header">
-                    <div class="author-info">
-                        <div class="avatar">${story.author[0].toUpperCase()}</div>
-                        <div>
-                            <div style="font-weight: 600; cursor: pointer;" onclick="showPage('profile', '${story.author}')">${story.author}</div>
-                            <div style="font-size: 0.85rem; color: #666;">${new Date(story.timestamp).toLocaleString()}</div>
-                        </div>
-                    </div>
-                    ${isAuthor ? `<button class="btn-secondary" style="width: auto;" onclick="deleteStory(${story.id})">Delete</button>` : ''}
-                </div>
-                <h2 style="margin-bottom: 1rem; color: #1a1a2e;">${story.title}</h2>
-                <div style="line-height: 1.8; margin-bottom: 1.5rem; white-space: pre-wrap;">${story.content}</div>
-                <div class="story-actions">
-                    <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${story.id}); loadStory(${story.id})">
-                        <span>${isLiked ? '❤️' : '🤍'}</span>
-                        <span>${story.likes.length} likes</span>
-                    </button>
-                    <button class="action-btn" onclick="focusComment(${story.id})">
-                        <span>💬</span>
-                        <span>Comment</span>
-                    </button>
-                </div>
-                <div class="comments-section" style="display: block; margin-top: 1.5rem;">
-                    <h3 style="margin-bottom: 1rem;">Comments (${story.comments.length})</h3>
-                    <div id="storyComments">
-                        ${story.comments.map(comment => `
-                            <div class="comment">
-                                <div class="comment-author">${comment.author}</div>
-                                <div>${comment.content}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="add-comment">
-                        <input type="text" id="commentInput-${story.id}" placeholder="Add a comment..." onkeypress="handleComment(event, ${story.id})">
-                        <button class="btn" style="width: auto;" onclick="addComment(${story.id})">Post</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function toggleLike(storyId) {
-            if (!app.currentUser) {
-                showAuthModal('login');
-                return;
-            }
-            app.likeStory(storyId);
-            if (currentPage === 'feed') loadFeed();
-        }
-
-        function toggleComments(storyId) {
-            const section = document.getElementById(`comments-${storyId}`);
-            section.classList.toggle('active');
-            
-            const story = app.getStory(storyId);
-            section.innerHTML = `
-                <div style="margin-top: 1rem;">
-                    ${story.comments.map(comment => `
-                        <div class="comment">
-                            <div class="comment-author">${comment.author}</div>
-                            <div>${comment.content}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="add-comment">
-                    <input type="text" id="commentInput-${storyId}" placeholder="Add a comment..." onkeypress="handleComment(event, ${storyId})">
-                    <button class="btn" style="width: auto;" onclick="addComment(${storyId})">Post</button>
-                </div>
-            `;
-        }
-
-        function handleComment(event, storyId) {
-            if (event.key === 'Enter') {
-                addComment(storyId);
-            }
-        }
-
-        function addComment(storyId) {
-            const input = document.getElementById(`commentInput-${storyId}`);
-            const content = input.value.trim();
-            
-            if (!content) return;
-            
-            app.commentOnStory(storyId, content);
-            input.value = '';
-            
-            // Reload current view
-            if (document.getElementById('storyPage').style.display !== 'none') {
-                loadStory(storyId);
-            } else {
-                toggleComments(storyId);
-            }
-        }
-
-        function focusComment(storyId) {
-            document.getElementById(`commentInput-${storyId}`).focus();
-        }
-
-        function deleteStory(storyId) {
-            if (confirm('Are you sure you want to delete this story?')) {
-                app.stories = app.stories.filter(s => s.id !== storyId);
-                app.saveData('stories', app.stories);
-                showPage('feed');
-            }
-        }
-
-        function loadProfile(username) {
-            const user = app.users.find(u => u.username === username);
-            if (!user) return;
-
-            const stories = app.getUserStories(username);
-            const followers = app.getFollowers(username);
-            const following = app.getFollowing(username);
-            const isFollowing = app.isFollowing(username);
-            const isOwnProfile = username === app.currentUser.username;
-
-            document.getElementById('profileHeader').innerHTML = `
-                <div class="profile-avatar">${username[0].toUpperCase()}</div>
-                <h2>${username}</h2>
-                <div style="color: #666; margin-top: 0.5rem;">Joined ${new Date(user.joinDate).toLocaleDateString()}</div>
-                ${!isOwnProfile ? `
-                    <button class="follow-btn ${isFollowing ? 'following' : ''}" onclick="toggleFollow('${username}')">
-                        ${isFollowing ? 'Following' : 'Follow'}
-                    </button>
-                ` : ''}
-                <div class="stats">
-                    <div class="stat" style="cursor: pointer;" onclick="showPage('followers', '${username}')">
-                        <div class="stat-value">${stories.length}</div>
-                        <div class="stat-label">Stories</div>
-                    </div>
-                    <div class="stat" style="cursor: pointer;" onclick="showPage('followers', '${username}')">
-                        <div class="stat-value">${followers.length}</div>
-                        <div class="stat-label">Followers</div>
-                    </div>
-                    <div class="stat" style="cursor: pointer;" onclick="showPage('following', '${username}')">
-                        <div class="stat-value">${following.length}</div>
-                        <div class="stat-label">Following</div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('profileStories').innerHTML = stories.length > 0 ? 
-                stories.map(story => createStoryCard(story)).join('') : 
-                '<p style="text-align: center; color: #666;">No stories yet.</p>';
-        }
-
-        function toggleFollow(username) {
-            if (app.isFollowing(username)) {
-                app.unfollowUser(username);
-            } else {
-                app.followUser(username);
-            }
-            loadProfile(username);
-        }
-
-        function loadFollowList(type, username) {
-            const title = type === 'followers' ? 'Followers' : 'Following';
-            const users = type === 'followers' ? app.getFollowers(username) : app.getFollowing(username);
-            
-            document.getElementById('followList').innerHTML = `
-                <h2 style="margin-bottom: 1rem;">${username}'s ${title}</h2>
-                <div id="userList">
-                    ${users.map(user => `
-                        <div class="user-item">
-                            <div style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;" onclick="showPage('profile', '${user}')">
-                                <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">${user[0].toUpperCase()}</div>
-                                <div style="font-weight: 600;">${user}</div>
-                            </div>
-                            ${user !== app.currentUser.username ? `
-                                <button class="btn" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;" 
-                                        onclick="toggleFollow('${user}'); loadFollowList('${type}', '${username}')">
-                                    ${app.isFollowing(user) ? 'Following' : 'Follow'}
-                                </button>
-                            ` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function loadConversations() {
-            const conversations = app.getConversations();
-            const list = document.getElementById('conversationList');
-            
-            if (conversations.length === 0) {
-                list.innerHTML = '<p style="padding: 1rem; color: #666;">No conversations yet. Start by following users!</p>';
-                return;
-            }
-
-            list.innerHTML = conversations.map(user => {
-                const messages = app.getMessages(user);
-                const lastMessage = messages[messages.length - 1];
-                return `
-                    <div class="conversation" onclick="openChat('${user}')">
-                        <div>
-                            <div style="font-weight: 600;">${user}</div>
-                            <div style="font-size: 0.85rem; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                ${lastMessage?.content || 'No messages'}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openChat(username) {
-            currentChatUser = username;
-            document.getElementById('noChat').style.display = 'none';
-            document.getElementById('chatArea').style.display = 'flex';
-            document.getElementById('chatHeader').textContent = username;
-            
-            // Load messages
-            const messages = app.getMessages(username);
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = messages.map(msg => `
-                <div class="message ${msg.from === app.currentUser.username ? 'sent' : 'received'}">
-                    ${msg.content}
-                </div>
-            `).join('');
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const content = input.value.trim();
-            
-            if (!content || !currentChatUser) return;
-            
-            app.sendMessage(currentChatUser, content);
-            input.value = '';
-            openChat(currentChatUser);
-        }
-
-        function handleMessageInput(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        // Add some demo data if first time
-        if (app.users.length === 0) {
-            // Create demo users
-            app.signup('StoryLover', 'password123');
-            app.signup('WriterPro', 'password123');
-            app.signup('CreativeMind', 'password123');
-            
-            // Create demo stories
-            const demoUsers = ['StoryLover', 'WriterPro', 'CreativeMind'];
-            const demoStories = [
-                { title: 'The Lost City', content: 'Deep in the jungle, hidden from modern eyes, lies a city forgotten by time...' },
-                { title: 'A New Beginning', content: 'The sun rose over the horizon, painting the sky in shades of orange and pink. It was a new day...' },
-                { title: 'Digital Dreams', content: 'In a world where reality and virtual blend, one programmer discovers a secret that changes everything...' }
-            ];
-            
-            app.currentUser = app.users[0];
-            demoStories.forEach((story, i) => {
-                app.createStory(story.title, story.content);
-                app.currentUser = app.users[i % demoUsers.length];
-            });
-            app.currentUser = null;
-        }
-    </script>
-</body>
-</html>
+                this.saveData('messages', this.message
