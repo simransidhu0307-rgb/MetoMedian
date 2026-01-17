@@ -5,546 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MetoMedia - Share Your Stories</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f0f2f5;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        /* Navigation */
-        .navbar {
-            background: #1a1a2e;
-            color: white;
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #4fbdba;
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        .nav-links a:hover {
-            background: #16213e;
-        }
-
-        .nav-links a.active {
-            background: #4fbdba;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        /* Auth Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #666;
-        }
-
-        .auth-form h2 {
-            margin-bottom: 1.5rem;
-            color: #1a1a2e;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        .btn {
-            background: #4fbdba;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s;
-            width: 100%;
-        }
-
-        .btn:hover {
-            background: #3da5a2;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        /* Story Card */
-        .story-card {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-
-        .story-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .story-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .author-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #4fbdba;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            object-fit: cover;
-        }
-
-        .avatar:hover {
-            opacity: 0.8;
-        }
-
-        .story-title {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            color: #1a1a2e;
-            cursor: pointer;
-        }
-
-        .story-content {
-            color: #555;
-            margin-bottom: 1rem;
-            line-height: 1.8;
-            max-height: 100px;
-            overflow: hidden;
-        }
-
-        .story-content.expanded {
-            max-height: none;
-        }
-
-        .story-actions {
-            display: flex;
-            gap: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            background: none;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .action-btn:hover {
-            background: #f8f9fa;
-            border-color: #4fbdba;
-            color: #4fbdba;
-        }
-
-        .action-btn.liked {
-            background: #4fbdba;
-            color: white;
-            border-color: #4fbdba;
-        }
-
-        /* Create Story */
-        .create-story {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-
-        .create-story h2 {
-            margin-bottom: 1.5rem;
-            color: #1a1a2e;
-        }
-
-        .create-story input, .create-story textarea {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        .create-story textarea {
-            min-height: 200px;
-            resize: vertical;
-        }
-
-        /* Comments Section */
-        .comments-section {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-            display: none;
-        }
-
-        .comments-section.active {
-            display: block;
-        }
-
-        .comment {
-            background: #f8f9fa;
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 0.5rem;
-        }
-
-        .comment-author {
-            font-weight: 600;
-            color: #4fbdba;
-            margin-bottom: 0.25rem;
-        }
-
-        .add-comment {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .add-comment input {
-            flex: 1;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        /* Messages */
-        .messages-container {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            height: 600px;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .conversation-list {
-            border-right: 1px solid #ddd;
-            overflow-y: auto;
-        }
-
-        .conversation {
-            padding: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .conversation:hover {
-            background: #f8f9fa;
-        }
-
-        .conversation.active {
-            background: #e3f2fd;
-        }
-
-        .chat-area {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            padding: 1rem;
-            border-bottom: 1px solid #ddd;
-            font-weight: 600;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .message {
-            max-width: 70%;
-            padding: 0.75rem;
-            border-radius: 10px;
-            word-wrap: break-word;
-        }
-
-        .message.sent {
-            background: #4fbdba;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 0;
-        }
-
-        .message.received {
-            background: #f0f2f5;
-            align-self: flex-start;
-            border-bottom-left-radius: 0;
-        }
-
-        .chat-input {
-            display: flex;
-            padding: 1rem;
-            border-top: 1px solid #ddd;
-        }
-
-        .chat-input input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            outline: none;
-        }
-
-        /* Profile */
-        .profile-header {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-            text-align: center;
-            position: relative;
-        }
-
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: #4fbdba;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 0 auto 1rem;
-            cursor: pointer;
-            object-fit: cover;
-            position: relative;
-            transition: opacity 0.3s;
-        }
-
-        .profile-avatar:hover {
-            opacity: 0.7;
-        }
-
-        .profile-avatar::after {
-            content: '📷';
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            font-size: 1.2rem;
-            background: #1a1a2e;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .profile-avatar:hover::after {
-            opacity: 1;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .bot-badge {
-            display: inline-block;
-            background: #4fbdba;
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-        }
-
-        .follow-btn {
-            background: #4fbdba;
-            color: white;
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-top: 1rem;
-        }
-
-        .follow-btn.following {
-            background: #6c757d;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #4fbdba;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* Followers/Following List */
-        .user-list {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .user-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .messages-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .conversation-list {
-                border-right: none;
-                border-bottom: 1px solid #ddd;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #f0f2f5; color: #333; line-height: 1.6; }
+        .navbar { background: #1a1a2e; color: white; padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: bold; color: #4fbdba; text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
+        .nav-links a:hover { background: #16213e; }
+        .nav-links a.active { background: #4fbdba; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: #666; }
+        .auth-form h2 { margin-bottom: 1.5rem; color: #1a1a2e; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .btn { background: #4fbdba; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; font-size: 1rem; transition: background 0.3s; width: 100%; }
+        .btn:hover { background: #3da5a2; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .story-card { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .story-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .story-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .author-info { display: flex; align-items: center; gap: 0.75rem; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4fbdba; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer; object-fit: cover; }
+        .avatar:hover { opacity: 0.8; }
+        .story-title { font-size: 1.3rem; margin-bottom: 0.5rem; color: #1a1a2e; cursor: pointer; }
+        .story-content { color: #555; margin-bottom: 1rem; line-height: 1.8; max-height: 100px; overflow: hidden; }
+        .story-content.expanded { max-height: none; }
+        .story-actions { display: flex; gap: 1rem; padding-top: 1rem; border-top: 1px solid #eee; }
+        .action-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 20px; background: none; cursor: pointer; transition: all 0.3s; }
+        .action-btn:hover { background: #f8f9fa; border-color: #4fbdba; color: #4fbdba; }
+        .action-btn.liked { background: #4fbdba; color: white; border-color: #4fbdba; }
+        .create-story { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .create-story h2 { margin-bottom: 1.5rem; color: #1a1a2e; }
+        .create-story input, .create-story textarea { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; font-family: inherit; }
+        .create-story textarea { min-height: 200px; resize: vertical; }
+        .comments-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee; display: none; }
+        .comments-section.active { display: block; }
+        .comment { background: #f8f9fa; padding: 0.75rem; border-radius: 5px; margin-bottom: 0.5rem; }
+        .comment-author { font-weight: 600; color: #4fbdba; margin-bottom: 0.25rem; }
+        .add-comment { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .add-comment input { flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; }
+        .messages-container { display: grid; grid-template-columns: 300px 1fr; height: 600px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .conversation-list { border-right: 1px solid #ddd; overflow-y: auto; }
+        .conversation { padding: 1rem; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .conversation:hover { background: #f8f9fa; }
+        .conversation.active { background: #e3f2fd; }
+        .chat-area { display: flex; flex-direction: column; }
+        .chat-header { padding: 1rem; border-bottom: 1px solid #ddd; font-weight: 600; }
+        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+        .message { max-width: 70%; padding: 0.75rem; border-radius: 10px; word-wrap: break-word; }
+        .message.sent { background: #4fbdba; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+        .message.received { background: #f0f2f5; align-self: flex-start; border-bottom-left-radius: 0; }
+        .chat-input { display: flex; padding: 1rem; border-top: 1px solid #ddd; }
+        .chat-input input { flex: 1; padding: 0.75rem; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        .profile-header { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; text-align: center; position: relative; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: #4fbdba; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold; margin: 0 auto 1rem; cursor: pointer; object-fit: cover; position: relative; transition: opacity 0.3s; }
+        .profile-avatar:hover { opacity: 0.7; }
+        .profile-avatar::after { content: '📷'; position: absolute; bottom: 5px; right: 5px; font-size: 1.2rem; background: #1a1a2e; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+        .profile-avatar:hover::after { opacity: 1; }
+        .file-input { display: none; }
+        .bot-badge { display: inline-block; background: #4fbdba; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; margin-left: 0.5rem; }
+        .follow-btn { background: #4fbdba; color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 20px; cursor: pointer; margin-top: 1rem; }
+        .follow-btn.following { background: #6c757d; }
+        .stats { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #4fbdba; }
+        .stat-label { color: #666; font-size: 0.9rem; }
+        .user-list { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #eee; }
+        .user-item:last-child { border-bottom: none; }
+        @media (max-width: 768px) { .messages-container { grid-template-columns: 1fr; } .conversation-list { border-right: none; border-bottom: 1px solid #ddd; } }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="#" class="logo" onclick="showPage('feed')">MetoMedia</a>
@@ -552,7 +90,7 @@
                 <a href="#" onclick="showPage('feed')" class="active" id="nav-feed">Home</a>
                 <a href="#" onclick="showPage('create')">Write</a>
                 <a href="#" onclick="showPage('messages')">Messages</a>
-                <a href="#" onclick="showPage('profile', currentUser.username)">Profile</a>
+                <a href="#" onclick="showPage('profile', app.currentUser.username)">Profile</a>
                 <a href="#" onclick="logout()">Logout</a>
             </div>
             <div class="nav-links" id="authNav">
@@ -562,9 +100,7 @@
         </div>
     </nav>
 
-    <!-- Main Container -->
     <div class="container">
-        <!-- Auth Modal -->
         <div class="modal" id="authModal">
             <div class="modal-content">
                 <span class="close-btn" onclick="closeAuthModal()">&times;</span>
@@ -586,13 +122,11 @@
             </div>
         </div>
 
-        <!-- Feed Page -->
         <div id="feedPage" class="page">
             <h2 style="margin-bottom: 2rem;">Your Story Feed</h2>
             <div id="storyFeed"></div>
         </div>
 
-        <!-- Create Story Page -->
         <div id="createPage" class="page" style="display: none;">
             <div class="create-story">
                 <h2>Write a New Story</h2>
@@ -602,18 +136,15 @@
             </div>
         </div>
 
-        <!-- Story Detail Page -->
         <div id="storyPage" class="page" style="display: none;">
             <div class="story-card" id="storyDetail"></div>
         </div>
 
-        <!-- Profile Page -->
         <div id="profilePage" class="page" style="display: none;">
             <div class="profile-header" id="profileHeader"></div>
             <div id="profileStories"></div>
         </div>
 
-        <!-- Messages Page -->
         <div id="messagesPage" class="page" style="display: none;">
             <h2 style="margin-bottom: 1rem;">Direct Messages</h2>
             <div class="messages-container">
@@ -632,14 +163,12 @@
             </div>
         </div>
 
-        <!-- Followers/Following Page -->
         <div id="followPage" class="page" style="display: none;">
             <div class="user-list" id="followList"></div>
         </div>
     </div>
 
     <script>
-        // Data Storage
         class MetoMedia {
             constructor() {
                 this.currentUser = null;
@@ -659,7 +188,6 @@
                 localStorage.setItem(key, JSON.stringify(data));
             }
 
-            // User Management
             signup(username, password) {
                 if (this.users.find(u => u.username === username)) {
                     return { success: false, error: 'Username already exists' };
@@ -674,7 +202,6 @@
                 this.users.push(user);
                 this.saveData('users', this.users);
                 
-                // Make bots follow new users automatically
                 if (!user.isBot) {
                     this.bots.forEach(bot => {
                         if (this.users.find(u => u.username === bot)) {
@@ -706,7 +233,6 @@
                 }
             }
 
-            // Story Management
             createStory(title, content) {
                 const story = {
                     id: Date.now(),
@@ -763,7 +289,6 @@
                 }
             }
 
-            // Follow Management
             followUser(username) {
                 if (username === this.currentUser.username) return;
                 const exists = this.follows.find(f => 
@@ -813,7 +338,6 @@
                 return this.follows.filter(f => f.follower === username).map(f => f.following);
             }
 
-            // Message Management
             sendMessage(toUser, content) {
                 const message = {
                     id: Date.now(),
@@ -849,12 +373,10 @@
             }
         }
 
-        // Initialize
         const app = new MetoMedia();
         let currentPage = 'feed';
         let currentChatUser = null;
 
-        // Check for logged in user
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
             const user = app.users.find(u => u.username === savedUser);
@@ -864,7 +386,6 @@
             }
         }
 
-        // UI Functions
         function showAuthModal(mode) {
             document.getElementById('authModal').classList.add('active');
             const title = document.getElementById('authTitle');
@@ -937,13 +458,9 @@
         }
 
         function showPage(page, param = null) {
-            // Hide all pages
             document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            
-            // Update nav active state
             document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
             
-            // Show selected page
             switch(page) {
                 case 'feed':
                     document.getElementById('feedPage').style.display = 'block';
@@ -1143,7 +660,6 @@
             app.commentOnStory(storyId, content);
             input.value = '';
             
-            // Reload current view
             if (document.getElementById('storyPage').style.display !== 'none') {
                 loadStory(storyId);
             } else {
@@ -1302,7 +818,6 @@
                 ${username}${userData?.isBot ? '<span class="bot-badge" style="margin-left: 0.5rem;">BOT</span>' : ''}
             `;
             
-            // Load messages
             const messages = app.getMessages(username);
             const chatMessages = document.getElementById('chatMessages');
             chatMessages.innerHTML = messages.map(msg => `
@@ -1311,7 +826,6 @@
                 </div>
             `).join('');
             
-            // Scroll to bottom
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
@@ -1325,7 +839,6 @@
             input.value = '';
             openChat(currentChatUser);
             
-            // Bot auto-reply
             const recipient = app.users.find(u => u.username === currentChatUser);
             if (recipient?.isBot) {
                 setTimeout(() => {
@@ -1351,14 +864,11 @@
             }
         }
 
-        // Add demo data if first time
         if (app.users.length === 0) {
-            // Create bot users
             app.bots.forEach(bot => {
                 app.signup(bot, 'password123');
             });
             
-            // Create demo stories for bots
             const botStories = [
                 { author: 'BotWriter', title: 'The Eternal Tale', content: 'Once upon a time, in a world of endless stories...' },
                 { author: 'PoetBot', title: 'Digital Dreams', content: 'In circuits deep and code so bright,\nA story forms within the night...' },
@@ -1372,10 +882,7 @@
                 app.createStory(story.title, story.content);
             });
             
-            // Reset current user
             app.currentUser = null;
-            
-            // Create one regular demo user
             app.signup('DemoUser', 'password123');
         }
     </script>
