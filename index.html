@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetoMedia - Share Your Stories</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: #1a1a2e;
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4fbdba;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: #16213e;
+        }
+
+        .nav-links a.active {
+            background: #4fbdba;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Auth Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .auth-form h2 {
+            margin-bottom: 1.5rem;
+            color: #1a1a2e;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: #4fbdba;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #3da5a2;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* Story Card */
+        .story-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .story-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .story-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4fbdba;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .story-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #1a1a2e;
+            cursor: pointer;
+        }
+
+        .story-content {
+            color: #555;
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            max-height: 100px;
+            overflow: hidden;
+        }
+
+        .story-content.expanded {
+            max-height: none;
+        }
+
+        .story-actions {
+            display: flex;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #f8f9fa;
+            border-color: #4fbdba;
+            color: #4fbdba;
+        }
+
+        .action-btn.liked {
+            background: #4fbdba;
+            color: white;
+            border-color: #4fbdba;
+        }
+
+        /* Create Story */
+        .create-story {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .create-story h2 {
+            margin-bottom: 1.5rem;
+            color: #1a1a2e;
+        }
+
+        .create-story input, .create-story textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .create-story textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            display: none;
+        }
+
+        .comments-section.active {
+            display: block;
+        }
+
+        .comment {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #4fbdba;
+            margin-bottom: 0.25rem;
+        }
+
+        .add-comment {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .add-comment input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* Messages */
+        .messages-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .conversation-list {
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+
+        .conversation {
+            padding: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .conversation:hover {
+            background: #f8f9fa;
+        }
+
+        .conversation.active {
+            background: #e3f2fd;
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #ddd;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 0.75rem;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+
+        .message.sent {
+            background: #4fbdba;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+
+        .message.received {
+            background: #f0f2f5;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        /* Profile */
+        .profile-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #4fbdba;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+        }
+
+        .follow-btn {
+            background: #4fbdba;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .follow-btn.following {
+            background: #6c757d;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4fbdba;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Followers/Following List */
+        .user-list {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .messages-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .conversation-list {
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="showPage('feed')">MetoMedia</a>
+            <div class="nav-links" id="navLinks" style="display: none;">
+                <a href="#" onclick="showPage('feed')" class="active" id="nav-feed">Home</a>
+                <a href="#" onclick="showPage('create')">Write</a>
+                <a href="#" onclick="showPage('messages')">Messages</a>
+                <a href="#" onclick="showPage('profile', currentUser.username)">Profile</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+            <div class="nav-links" id="authNav">
+                <a href="#" onclick="showAuthModal('login')">Login</a>
+                <a href="#" onclick="showAuthModal('signup')">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Auth Modal -->
+        <div class="modal" id="authModal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeAuthModal()">&times;</span>
+                <form class="auth-form" id="authForm" onsubmit="handleAuth(event)">
+                    <h2 id="authTitle">Sign Up</h2>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn" id="authBtn">Sign Up</button>
+                    <p style="margin-top: 1rem; text-align: center;">
+                        <a href="#" onclick="toggleAuthMode()" id="authToggle">Already have an account? Login</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Feed Page -->
+        <div id="feedPage" class="page">
+            <h2 style="margin-bottom: 2rem;">Your Story Feed</h2>
+            <div id="storyFeed"></div>
+        </div>
+
+        <!-- Create Story Page -->
+        <div id="createPage" class="page" style="display: none;">
+            <div class="create-story">
+                <h2>Write a New Story</h2>
+                <input type="text" id="storyTitle" placeholder="Story Title" required>
+                <textarea id="storyContent" placeholder="Write your story here..." required></textarea>
+                <button class="btn" onclick="publishStory()">Publish Story</button>
+            </div>
+        </div>
+
+        <!-- Story Detail Page -->
+        <div id="storyPage" class="page" style="display: none;">
+            <div class="story-card" id="storyDetail"></div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profilePage" class="page" style="display: none;">
+            <div class="profile-header" id="profileHeader"></div>
+            <div id="profileStories"></div>
+        </div>
+
+        <!-- Messages Page -->
+        <div id="messagesPage" class="page" style="display: none;">
+            <h2 style="margin-bottom: 1rem;">Direct Messages</h2>
+            <div class="messages-container">
+                <div class="conversation-list" id="conversationList"></div>
+                <div class="chat-area" id="chatArea" style="display: none;">
+                    <div class="chat-header" id="chatHeader"></div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleMessageInput(event)">
+                        <button class="btn" style="width: auto; margin-left: 0.5rem;" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+                <div id="noChat" style="display: flex; align-items: center; justify-content: center; flex: 1; color: #999;">
+                    Select a conversation to start messaging
+                </div>
+            </div>
+        </div>
+
+        <!-- Followers/Following Page -->
+        <div id="followPage" class="page" style="display: none;">
+            <div class="user-list" id="followList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        class MetoMedia {
+            constructor() {
+                this.currentUser = null;
+                this.users = this.loadData('users') || [];
+                this.stories = this.loadData('stories') || [];
+                this.messages = this.loadData('messages') || [];
+                this.follows = this.loadData('follows') || [];
+            }
+
+            loadData(key) {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            }
+
+            saveData(key, data) {
+                localStorage.setItem(key, JSON.stringify(data));
+            }
+
+            // User Management
+            signup(username, password) {
+                if (this.users.find(u => u.username === username)) {
+                    return { success: false, error: 'Username already exists' };
+                }
+                const user = { username, password, joinDate: new Date().toISOString() };
+                this.users.push(user);
+                this.saveData('users', this.users);
+                return { success: true };
+            }
+
+            login(username, password) {
+                const user = this.users.find(u => u.username === username && u.password === password);
+                if (user) {
+                    this.currentUser = user;
+                    return { success: true };
+                }
+                return { success: false, error: 'Invalid credentials' };
+            }
+
+            // Story Management
+            createStory(title, content) {
+                const story = {
+                    id: Date.now(),
+                    author: this.currentUser.username,
+                    title,
+                    content,
+                    likes: [],
+                    comments: [],
+                    timestamp: new Date().toISOString()
+                };
+                this.stories.unshift(story);
+                this.saveData('stories', this.stories);
+                return story;
+            }
+
+            getStories() {
+                const following = this.follows.filter(f => f.follower === this.currentUser.username).map(f => f.following);
+                return this.stories.filter(s => 
+                    s.author === this.currentUser.username || following.includes(s.author)
+                ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }
+
+            getStory(id) {
+                return this.stories.find(s => s.id === parseInt(id));
+            }
+
+            getUserStories(username) {
+                return this.stories.filter(s => s.author === username)
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }
+
+            likeStory(storyId) {
+                const story = this.stories.find(s => s.id === storyId);
+                if (story) {
+                    const userIndex = story.likes.indexOf(this.currentUser.username);
+                    if (userIndex > -1) {
+                        story.likes.splice(userIndex, 1);
+                    } else {
+                        story.likes.push(this.currentUser.username);
+                    }
+                    this.saveData('stories', this.stories);
+                }
+            }
+
+            commentOnStory(storyId, comment) {
+                const story = this.stories.find(s => s.id === storyId);
+                if (story) {
+                    story.comments.push({
+                        author: this.currentUser.username,
+                        content: comment,
+                        timestamp: new Date().toISOString()
+                    });
+                    this.saveData('stories', this.stories);
+                }
+            }
+
+            // Follow Management
+            followUser(username) {
+                if (username === this.currentUser.username) return;
+                const exists = this.follows.find(f => 
+                    f.follower === this.currentUser.username && f.following === username
+                );
+                if (!exists) {
+                    this.follows.push({
+                        follower: this.currentUser.username,
+                        following: username
+                    });
+                    this.saveData('follows', this.follows);
+                }
+            }
+
+            unfollowUser(username) {
+                this.follows = this.follows.filter(f => 
+                    !(f.follower === this.currentUser.username && f.following === username)
+                );
+                this.saveData('follows', this.follows);
+            }
+
+            isFollowing(username) {
+                return this.follows.some(f => 
+                    f.follower === this.currentUser.username && f.following === username
+                );
+            }
+
+            getFollowers(username) {
+                return this.follows.filter(f => f.following === username).map(f => f.follower);
+            }
+
+            getFollowing(username) {
+                return this.follows.filter(f => f.follower === username).map(f => f.following);
+            }
+
+            // Message Management
+            sendMessage(toUser, content) {
+                const message = {
+                    id: Date.now(),
+                    from: this.currentUser.username,
+                    to: toUser,
+                    content,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                };
+                this.messages.push(message);
+                this.saveData('messages', this.messages);
+                return message;
+            }
+
+            getConversations() {
+                const conversations = new Set();
+                this.messages
+                    .filter(m => m.from === this.currentUser.username || m.to === this.currentUser.username)
+                    .forEach(m => {
+                        const otherUser = m.from === this.currentUser.username ? m.to : m.from;
+                        conversations.add(otherUser);
+                    });
+                return Array.from(conversations);
+            }
+
+            getMessages(withUser) {
+                return this.messages
+                    .filter(m => 
+                        (m.from === this.currentUser.username && m.to === withUser) ||
+                        (m.from === withUser && m.to === this.currentUser.username)
+                    )
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            }
+        }
+
+        // Initialize
+        const app = new MetoMedia();
+        let currentPage = 'feed';
+        let currentChatUser = null;
+
+        // Check for logged in user
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            const user = app.users.find(u => u.username === savedUser);
+            if (user) {
+                app.currentUser = user;
+                showLoggedInState();
+            }
+        }
+
+        // UI Functions
+        function showAuthModal(mode) {
+            document.getElementById('authModal').classList.add('active');
+            const title = document.getElementById('authTitle');
+            const btn = document.getElementById('authBtn');
+            const toggle = document.getElementById('authToggle');
+            
+            if (mode === 'login') {
+                title.textContent = 'Login';
+                btn.textContent = 'Login';
+                toggle.textContent = "Don't have an account? Sign Up";
+            } else {
+                title.textContent = 'Sign Up';
+                btn.textContent = 'Sign Up';
+                toggle.textContent = 'Already have an account? Login';
+            }
+            
+            document.getElementById('authForm').dataset.mode = mode;
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authForm').reset();
+        }
+
+        function toggleAuthMode() {
+            const mode = document.getElementById('authForm').dataset.mode;
+            showAuthModal(mode === 'login' ? 'signup' : 'login');
+        }
+
+        function handleAuth(event) {
+            event.preventDefault();
+            const mode = event.target.dataset.mode;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (mode === 'signup') {
+                const result = app.signup(username, password);
+                if (result.success) {
+                    alert('Account created successfully! Please login.');
+                    showAuthModal('login');
+                } else {
+                    alert(result.error);
+                }
+            } else {
+                const result = app.login(username, password);
+                if (result.success) {
+                    localStorage.setItem('currentUser', username);
+                    closeAuthModal();
+                    showLoggedInState();
+                    showPage('feed');
+                } else {
+                    alert(result.error);
+                }
+            }
+        }
+
+        function showLoggedInState() {
+            document.getElementById('navLinks').style.display = 'flex';
+            document.getElementById('authNav').style.display = 'none';
+            loadFeed();
+        }
+
+        function logout() {
+            app.currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('navLinks').style.display = 'none';
+            document.getElementById('authNav').style.display = 'flex';
+            showPage('feed');
+            document.getElementById('storyFeed').innerHTML = '<p style="text-align: center; color: #666;">Please login to see stories.</p>';
+        }
+
+        function showPage(page, param = null) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            
+            // Show selected page
+            switch(page) {
+                case 'feed':
+                    document.getElementById('feedPage').style.display = 'block';
+                    document.getElementById('nav-feed').classList.add('active');
+                    if (app.currentUser) loadFeed();
+                    break;
+                case 'create':
+                    document.getElementById('createPage').style.display = 'block';
+                    document.getElementById('nav-create').classList.add('active');
+                    break;
+                case 'story':
+                    document.getElementById('storyPage').style.display = 'block';
+                    loadStory(param);
+                    break;
+                case 'profile':
+                    document.getElementById('profilePage').style.display = 'block';
+                    loadProfile(param);
+                    break;
+                case 'messages':
+                    document.getElementById('messagesPage').style.display = 'block';
+                    document.getElementById('nav-messages').classList.add('active');
+                    loadConversations();
+                    break;
+                case 'followers':
+                case 'following':
+                    document.getElementById('followPage').style.display = 'block';
+                    loadFollowList(page, param);
+                    break;
+            }
+        }
+
+        function loadFeed() {
+            if (!app.currentUser) return;
+            const stories = app.getStories();
+            const feed = document.getElementById('storyFeed');
+            
+            if (stories.length === 0) {
+                feed.innerHTML = '<p style="text-align: center; color: #666;">No stories yet. Follow users or write your own!</p>';
+                return;
+            }
+
+            feed.innerHTML = stories.map(story => createStoryCard(story)).join('');
+        }
+
+        function createStoryCard(story) {
+            const isLiked = story.likes.includes(app.currentUser.username);
+            const author = app.users.find(u => u.username === story.author);
+            
+            return `
+                <div class="story-card">
+                    <div class="story-header">
+                        <div class="author-info">
+                            <div class="avatar">${story.author[0].toUpperCase()}</div>
+                            <div>
+                                <div style="font-weight: 600; cursor: pointer;" onclick="showPage('profile', '${story.author}')">${story.author}</div>
+                                <div style="font-size: 0.85rem; color: #666;">${new Date(story.timestamp).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="story-title" onclick="showPage('story', ${story.id})">${story.title}</h3>
+                    <div class="story-content" id="content-${story.id}">
+                        ${story.content}
+                    </div>
+                    <div class="story-actions">
+                        <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${story.id})">
+                            <span>${isLiked ? '❤️' : '🤍'}</span>
+                            <span>${story.likes.length}</span>
+                        </button>
+                        <button class="action-btn" onclick="toggleComments(${story.id})">
+                            <span>💬</span>
+                            <span>${story.comments.length}</span>
+                        </button>
+                        <button class="action-btn" onclick="showPage('story', ${story.id})">
+                            <span>📖</span>
+                            <span>Read More</span>
+                        </button>
+                    </div>
+                    <div class="comments-section" id="comments-${story.id}"></div>
+                </div>
+            `;
+        }
+
+        function publishStory() {
+            const title = document.getElementById('storyTitle').value;
+            const content = document.getElementById('storyContent').value;
+            
+            if (!title || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            app.createStory(title, content);
+            document.getElementById('storyTitle').value = '';
+            document.getElementById('storyContent').value = '';
+            showPage('feed');
+            alert('Story published successfully!');
+        }
+
+        function loadStory(storyId) {
+            const story = app.getStory(storyId);
+            if (!story) {
+                showPage('feed');
+                return;
+            }
+
+            const isLiked = story.likes.includes(app.currentUser.username);
+            const isAuthor = story.author === app.currentUser.username;
+            
+            document.getElementById('storyDetail').innerHTML = `
+                <div class="story-header">
+                    <div class="author-info">
+                        <div class="avatar">${story.author[0].toUpperCase()}</div>
+                        <div>
+                            <div style="font-weight: 600; cursor: pointer;" onclick="showPage('profile', '${story.author}')">${story.author}</div>
+                            <div style="font-size: 0.85rem; color: #666;">${new Date(story.timestamp).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    ${isAuthor ? `<button class="btn-secondary" style="width: auto;" onclick="deleteStory(${story.id})">Delete</button>` : ''}
+                </div>
+                <h2 style="margin-bottom: 1rem; color: #1a1a2e;">${story.title}</h2>
+                <div style="line-height: 1.8; margin-bottom: 1.5rem; white-space: pre-wrap;">${story.content}</div>
+                <div class="story-actions">
+                    <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${story.id}); loadStory(${story.id})">
+                        <span>${isLiked ? '❤️' : '🤍'}</span>
+                        <span>${story.likes.length} likes</span>
+                    </button>
+                    <button class="action-btn" onclick="focusComment(${story.id})">
+                        <span>💬</span>
+                        <span>Comment</span>
+                    </button>
+                </div>
+                <div class="comments-section" style="display: block; margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem;">Comments (${story.comments.length})</h3>
+                    <div id="storyComments">
+                        ${story.comments.map(comment => `
+                            <div class="comment">
+                                <div class="comment-author">${comment.author}</div>
+                                <div>${comment.content}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="add-comment">
+                        <input type="text" id="commentInput-${story.id}" placeholder="Add a comment..." onkeypress="handleComment(event, ${story.id})">
+                        <button class="btn" style="width: auto;" onclick="addComment(${story.id})">Post</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleLike(storyId) {
+            if (!app.currentUser) {
+                showAuthModal('login');
+                return;
+            }
+            app.likeStory(storyId);
+            if (currentPage === 'feed') loadFeed();
+        }
+
+        function toggleComments(storyId) {
+            const section = document.getElementById(`comments-${storyId}`);
+            section.classList.toggle('active');
+            
+            const story = app.getStory(storyId);
+            section.innerHTML = `
+                <div style="margin-top: 1rem;">
+                    ${story.comments.map(comment => `
+                        <div class="comment">
+                            <div class="comment-author">${comment.author}</div>
+                            <div>${comment.content}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="add-comment">
+                    <input type="text" id="commentInput-${storyId}" placeholder="Add a comment..." onkeypress="handleComment(event, ${storyId})">
+                    <button class="btn" style="width: auto;" onclick="addComment(${storyId})">Post</button>
+                </div>
+            `;
+        }
+
+        function handleComment(event, storyId) {
+            if (event.key === 'Enter') {
+                addComment(storyId);
+            }
+        }
+
+        function addComment(storyId) {
+            const input = document.getElementById(`commentInput-${storyId}`);
+            const content = input.value.trim();
+            
+            if (!content) return;
+            
+            app.commentOnStory(storyId, content);
+            input.value = '';
+            
+            // Reload current view
+            if (document.getElementById('storyPage').style.display !== 'none') {
+                loadStory(storyId);
+            } else {
+                toggleComments(storyId);
+            }
+        }
+
+        function focusComment(storyId) {
+            document.getElementById(`commentInput-${storyId}`).focus();
+        }
+
+        function deleteStory(storyId) {
+            if (confirm('Are you sure you want to delete this story?')) {
+                app.stories = app.stories.filter(s => s.id !== storyId);
+                app.saveData('stories', app.stories);
+                showPage('feed');
+            }
+        }
+
+        function loadProfile(username) {
+            const user = app.users.find(u => u.username === username);
+            if (!user) return;
+
+            const stories = app.getUserStories(username);
+            const followers = app.getFollowers(username);
+            const following = app.getFollowing(username);
+            const isFollowing = app.isFollowing(username);
+            const isOwnProfile = username === app.currentUser.username;
+
+            document.getElementById('profileHeader').innerHTML = `
+                <div class="profile-avatar">${username[0].toUpperCase()}</div>
+                <h2>${username}</h2>
+                <div style="color: #666; margin-top: 0.5rem;">Joined ${new Date(user.joinDate).toLocaleDateString()}</div>
+                ${!isOwnProfile ? `
+                    <button class="follow-btn ${isFollowing ? 'following' : ''}" onclick="toggleFollow('${username}')">
+                        ${isFollowing ? 'Following' : 'Follow'}
+                    </button>
+                ` : ''}
+                <div class="stats">
+                    <div class="stat" style="cursor: pointer;" onclick="showPage('followers', '${username}')">
+                        <div class="stat-value">${stories.length}</div>
+                        <div class="stat-label">Stories</div>
+                    </div>
+                    <div class="stat" style="cursor: pointer;" onclick="showPage('followers', '${username}')">
+                        <div class="stat-value">${followers.length}</div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+                    <div class="stat" style="cursor: pointer;" onclick="showPage('following', '${username}')">
+                        <div class="stat-value">${following.length}</div>
+                        <div class="stat-label">Following</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('profileStories').innerHTML = stories.length > 0 ? 
+                stories.map(story => createStoryCard(story)).join('') : 
+                '<p style="text-align: center; color: #666;">No stories yet.</p>';
+        }
+
+        function toggleFollow(username) {
+            if (app.isFollowing(username)) {
+                app.unfollowUser(username);
+            } else {
+                app.followUser(username);
+            }
+            loadProfile(username);
+        }
+
+        function loadFollowList(type, username) {
+            const title = type === 'followers' ? 'Followers' : 'Following';
+            const users = type === 'followers' ? app.getFollowers(username) : app.getFollowing(username);
+            
+            document.getElementById('followList').innerHTML = `
+                <h2 style="margin-bottom: 1rem;">${username}'s ${title}</h2>
+                <div id="userList">
+                    ${users.map(user => `
+                        <div class="user-item">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;" onclick="showPage('profile', '${user}')">
+                                <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">${user[0].toUpperCase()}</div>
+                                <div style="font-weight: 600;">${user}</div>
+                            </div>
+                            ${user !== app.currentUser.username ? `
+                                <button class="btn" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;" 
+                                        onclick="toggleFollow('${user}'); loadFollowList('${type}', '${username}')">
+                                    ${app.isFollowing(user) ? 'Following' : 'Follow'}
+                                </button>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function loadConversations() {
+            const conversations = app.getConversations();
+            const list = document.getElementById('conversationList');
+            
+            if (conversations.length === 0) {
+                list.innerHTML = '<p style="padding: 1rem; color: #666;">No conversations yet. Start by following users!</p>';
+                return;
+            }
+
+            list.innerHTML = conversations.map(user => {
+                const messages = app.getMessages(user);
+                const lastMessage = messages[messages.length - 1];
+                return `
+                    <div class="conversation" onclick="openChat('${user}')">
+                        <div>
+                            <div style="font-weight: 600;">${user}</div>
+                            <div style="font-size: 0.85rem; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${lastMessage?.content || 'No messages'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openChat(username) {
+            currentChatUser = username;
+            document.getElementById('noChat').style.display = 'none';
+            document.getElementById('chatArea').style.display = 'flex';
+            document.getElementById('chatHeader').textContent = username;
+            
+            // Load messages
+            const messages = app.getMessages(username);
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = messages.map(msg => `
+                <div class="message ${msg.from === app.currentUser.username ? 'sent' : 'received'}">
+                    ${msg.content}
+                </div>
+            `).join('');
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content || !currentChatUser) return;
+            
+            app.sendMessage(currentChatUser, content);
+            input.value = '';
+            openChat(currentChatUser);
+        }
+
+        function handleMessageInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Add some demo data if first time
+        if (app.users.length === 0) {
+            // Create demo users
+            app.signup('StoryLover', 'password123');
+            app.signup('WriterPro', 'password123');
+            app.signup('CreativeMind', 'password123');
+            
+            // Create demo stories
+            const demoUsers = ['StoryLover', 'WriterPro', 'CreativeMind'];
+            const demoStories = [
+                { title: 'The Lost City', content: 'Deep in the jungle, hidden from modern eyes, lies a city forgotten by time...' },
+                { title: 'A New Beginning', content: 'The sun rose over the horizon, painting the sky in shades of orange and pink. It was a new day...' },
+                { title: 'Digital Dreams', content: 'In a world where reality and virtual blend, one programmer discovers a secret that changes everything...' }
+            ];
+            
+            app.currentUser = app.users[0];
+            demoStories.forEach((story, i) => {
+                app.createStory(story.title, story.content);
+                app.currentUser = app.users[i % demoUsers.length];
+            });
+            app.currentUser = null;
+        }
+    </script>
+</body>
+</html>
